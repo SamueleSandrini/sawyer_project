@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+
+<launch>
+
+  <node pkg="tf" type="static_transform_publisher" name="telecamera" args="0.77235 -0.528889  0.982745 -0.15189375  0.54437162  1.4111142 /base /camera_link 100"/>
+
+
+</launch>

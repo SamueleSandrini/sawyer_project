@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <rosparam command="load" file="$(find sawyer_project)/config/objects_distribution.yaml" />
+
+
+  <node name="scaling_node" pkg="sawyer_project" type="velocityScaling.py"  output="screen" />
+
+  <node name="pick_place_node" pkg="sawyer_project" type="pick_place.py"  output="screen" />
+
+
+</launch>

@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   tf
   moveit_msgs
+  robotiq_2f_gripper_control
 )
 
 ## System dependencies are found with CMake's conventions

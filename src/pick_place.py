@@ -1,12 +1,12 @@
 #! /usr/bin/env python3
 
 import rospy
-# import robotiq_2f_gripper_control.Robotiq2FGripperSimpleController 
 
 # from std_srvs.srv import SetBool,SetBoolResponse
 # from std_msgs.msg import String
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Pose, Point, Quaternion, PoseArray, Transform, Vector3, TransformStamped
+from Gripper import Gripper
 
 import sys 
 import intera_interface              # intera_interface - Sawyer Python API
@@ -23,6 +23,7 @@ OBJECT_PARAM = "object_distribution"
 PARAM_NOT_DEFINED_ERROR = RED + "Parameter : {} not defined" + END
 DEFINED_SEQUENCE = ["approach_pick", "pick", "approach_leave", "leave","approach_leave"]
 DEFINED_ROBOTIQ_COMMAND = {"approach_pick": "open","pick": "close", "leave": "open"}
+COMMAND_TO_GRIPPER = {"open":"o", "close":"c", "reset":"r","activate":"a"}
 
 def main():
     rospy.init_node('pick_plance_node', anonymous=True)
@@ -36,6 +37,10 @@ def main():
     
     limb = intera_interface.Limb('right')   # create an instance of intera_interface's Limb class
     
+    # Reset Gripper
+    gripper = Gripper()
+    gripper.genCommand(COMMAND_TO_GRIPPER["reset"])
+    
     # Initial set-up robot
     rospy.loginfo("Moving to robot-neutral position with low speed...")
     limb.set_joint_position_speed(speed=0.3)
@@ -43,7 +48,6 @@ def main():
     limb.set_joint_position_speed(speed=1)
     rospy.loginfo("Robot speed set to maximum velocity...")
     
-    # Reset pinza
     for object in object_distribution:
         for position_to_reach in DEFINED_SEQUENCE:
             if position_to_reach in object:
@@ -51,8 +55,8 @@ def main():
                 limb.move_to_joint_positions(set_point_position)
             if position_to_reach in DEFINED_ROBOTIQ_COMMAND:
                 #aziona la pinza con il comando DEFINED_ROBOTIQ_COMMAND[position_to_reach]
-                pass
-    
+                gripper.genCommand(COMMAND_TO_GRIPPER[DEFINED_ROBOTIQ_COMMAND[position_to_reach]])
+                
 
     
 if __name__ == "__main__":

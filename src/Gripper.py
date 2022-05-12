@@ -36,55 +36,84 @@
 # Revision $Id$
 
 """@package docstring
-ROS node for controling a Robotiq 2F gripper using the Modbus RTU protocol.
+Command-line interface for sending simple commands to a ROS node controlling a 2F gripper.
 
-The script takes as an argument the IP address of the gripper. It initializes a baseRobotiq2FGripper object and adds a comModbusTcp client to it. It then loops forever, reading the gripper status and updating its command. The gripper status is published on the 'Robotiq2FGripperRobotInput' topic using the 'Robotiq2FGripper_robot_input' msg type. The node subscribes to the 'Robotiq2FGripperRobotOutput' topic for new commands using the 'Robotiq2FGripper_robot_output' msg type. Examples are provided to control the gripper (Robotiq2FGripperSimpleController.py) and interpreting its status (Robotiq2FGripperStatusListener.py).
+This serves as an example for publishing messages on the 'Robotiq2FGripperRobotOutput' topic using the 'Robotiq2FGripper_robot_output' msg type for sending commands to a 2F gripper.
 """
 
+from __future__ import print_function
+
 import roslib; roslib.load_manifest('robotiq_2f_gripper_control')
-roslib.load_manifest('robotiq_modbus_rtu')
 import rospy
-import robotiq_2f_gripper_control.baseRobotiq2FGripper
-import robotiq_modbus_rtu.comModbusRtu
-import os, sys
-from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_input  as inputMsg
-from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
+from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output  as outputMsg
+from time import sleep
 
-def mainLoop(device):
+class Gripper:
+    def __init__(self):
+        pub_ = rospy.Publisher('Robotiq2FGripperRobotOutput', outputMsg.Robotiq2FGripper_robot_output)
+    
+    def genCommand(self,char):
+        """Update the command according to the character entered by the user."""
+        # strAskForCommand  = '-----\nAvailable commands\n\n'
+        # strAskForCommand += 'r: Reset\n'
+        # strAskForCommand += 'a: Activate\n'
+        # strAskForCommand += 'c: Close\n'
+        # strAskForCommand += 'o: Open\n'
+        # strAskForCommand += '(0-255): Go to that position\n'
+        # strAskForCommand += 'f: Faster\n'
+        # strAskForCommand += 'l: Slower\n'
+        # strAskForCommand += 'i: Increase force\n'
+        # strAskForCommand += 'd: Decrease force\n'
+        if char == 'a':
+            command = outputMsg.Robotiq2FGripper_robot_output();
+            command.rACT = 1
+            command.rGTO = 1
+            command.rSP  = 255
+            command.rFR  = 150
 
-    #Gripper is a 2F with a TCP connection
-    gripper = robotiq_2f_gripper_control.baseRobotiq2FGripper.robotiqbaseRobotiq2FGripper()
-    gripper.client = robotiq_modbus_rtu.comModbusRtu.communication()
+        if char == 'r':
+            command = outputMsg.Robotiq2FGripper_robot_output();
+            command.rACT = 0
 
-    #We connect to the address received as an argument
-    gripper.client.connectToDevice(device)
+        if char == 'c':
+            command.rPR = 255
 
-    rospy.init_node('robotiq2FGripper')
+        if char == 'o':
+            command.rPR = 0
 
-    #The Gripper status is published on the topic named 'Robotiq2FGripperRobotInput'
-    pub = rospy.Publisher('Robotiq2FGripperRobotInput', inputMsg.Robotiq2FGripper_robot_input)
+        #If the command entered is a int, assign this value to rPRA
+        try:
+            command.rPR = int(char)
+            if command.rPR > 255:
+                command.rPR = 255
+            if command.rPR < 0:
+                command.rPR = 0
+        except ValueError:
+            pass
 
-    #The Gripper command is received from the topic named 'Robotiq2FGripperRobotOutput'
-    rospy.Subscriber('Robotiq2FGripperRobotOutput', outputMsg.Robotiq2FGripper_robot_output, gripper.refreshCommand)
+        if char == 'f':
+            command.rSP += 25
+            if command.rSP > 255:
+                command.rSP = 255
+
+        if char == 'l':
+            command.rSP -= 25
+            if command.rSP < 0:
+                command.rSP = 0
 
 
-    #We loop
-    while not rospy.is_shutdown():
+        if char == 'i':
+            command.rFR += 25
+            if command.rFR > 255:
+                command.rFR = 255
 
-      #Get and publish the Gripper status
-      status = gripper.getStatus()
-      pub.publish(status)
+        if char == 'd':
+            command.rFR -= 25
+            if command.rFR < 0:
+                command.rFR = 0
 
-      #Wait a little
-      #rospy.sleep(0.05)
+        self.publisher(command)
 
-      #Send the most recent command
-      gripper.sendCommand()
+    def publisher(self,command):
+        self.pub_.publish(command)
 
-      #Wait a little
-      #rospy.sleep(0.05)
-
-if __name__ == '__main__':
-    try:
-        mainLoop(sys.argv[1])
-    except rospy.ROSInterruptException: pass

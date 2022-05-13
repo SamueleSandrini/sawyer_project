@@ -47,7 +47,7 @@ def main():
         latch=True,
         queue_size=10)
 
-    rate = rospy.Rate(50) # frequency of tf reader
+    rate = rospy.Rate(20) # frequency of tf reader
 
     listener = tf.TransformListener()
 
@@ -78,7 +78,7 @@ def main():
 
     # Scaling parameters
     scaling_time = 0.2                  # time required to scale the speed
-    scaling_pub_freq = 100              # scaling pub frequency
+    scaling_pub_freq = 50              # scaling pub frequency
     rate_scaling_factor = rospy.Rate(scaling_pub_freq)   # rate of sleep of pub. scaling
     dt = 1/scaling_pub_freq
 

@@ -21,7 +21,7 @@ END = '\033[0m'
 
 OBJECT_PARAM = "objects"
 PARAM_NOT_DEFINED_ERROR = RED + "Parameter : {} not defined" + END
-DEFINED_SEQUENCE = ["approach_pick", "pick", "approach_leave", "leave","approach_leave"]
+DEFINED_SEQUENCE = ["approach_pick", "pick", "leave_pick", "approach_leave", "leave","approach_leave"]
 DEFINED_ROBOTIQ_COMMAND = {"approach_pick": "open","pick": "close", "leave": "open"}
 COMMAND_TO_GRIPPER = {"open":"o", "close":"c", "reset":"r","activate":"a"}
 

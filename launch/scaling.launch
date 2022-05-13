@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <arg name="nominal_speed_ratio" default="0.4"/>
+  <param name="nominal_speed_ratio" value="$(arg nominal_speed_ratio)"/>
+
+  <node name="scaling_node" pkg="sawyer_project" type="velocityScaling.py"  output="screen" />
+
+
+
+</launch>

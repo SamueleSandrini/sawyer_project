@@ -40,11 +40,12 @@ def main():
         latch=True,
         queue_size=10)
     
-    rate = rospy.Rate(50) # 10hz
+    rate = rospy.Rate(50) # frequency of tf reader
 
-    listener = tf.TransformListener()
+    listener = tf.TransformListener()   
     
-    
+    ########################### all this part only to recive all robot-sawyer link, can be replaced by ["right...","righ"]
+    # with all robot frame that you want to check distance from human
     moveit_commander.roscpp_initialize(sys.argv)
     robot = moveit_commander.RobotCommander()
     scene = moveit_commander.PlanningSceneInterface()
@@ -64,19 +65,21 @@ def main():
     robot_tf_link_to_check = ["reference/right_l6"]
     print(robot_tf_link_to_check)
 
-    human_keypoints = [16]
-    #Scaling parameters
-    scaling_time = 0.2    
-    scaling_pub_freq = 100
-    rate_scaling_factor = rospy.Rate(scaling_pub_freq)
-    dt = 1/scaling_pub_freq
+    ################################
+    
+    
+    human_keypoints = [16]              # list of human keypoint to check distance from robot 
+    
+    # Scaling parameters
+    scaling_time = 0.2                  # time required to scale the speed
+    scaling_pub_freq = 100              # scaling pub frequency 
+    rate_scaling_factor = rospy.Rate(scaling_pub_freq)   # rate of sleep of pub. scaling
+    dt = 1/scaling_pub_freq                             
+     
     actual_speed_ratio = 1 # da leggere da qualche parte
     
     while not rospy.is_shutdown():
-        # hello_str = "hello world %s" % rospy.get_time()
-        #rospy.loginfo(hello_str)
-
-        rospy.loginfo("itero")
+        rospy.loginfo("New reading...")
 
         distances = []
         time = rospy.Time.now()
@@ -110,11 +113,14 @@ def main():
                     # print(trans_robot_human)
                     #relative_distance = np.linalg.norm(trans_robot_human)
                     relative_distance = np.linalg.norm(trans_robot_base_mat[0:3,3] - trans_base_human_mat[0:3,3])
-                    distances.append(relative_distance)
+                    
                     relative_distance -= 0.1
+                    
+                    distances.append(relative_distance)
+                    
                     print(relative_distance)
-                    if(relative_distance<0.5):
-                        pub_speed_ratio.publish(0.5)
+                    # if(relative_distance<0.5):
+                    #     pub_speed_ratio.publish(0.5)
                     #trans = tfBuffer.lookup_transform("camera_color_optical_frame", "id_"+str(human_keypoint), rospy.Time())
                     # print(rospy.Time.now().to_sec()-trans_robot_base.header.stamp.to_sec)
                     if True:
@@ -125,7 +131,7 @@ def main():
                         pass
                         
                     else:
-                        rospy.loginfo("troppo vecchia")
+                        rospy.loginfo("Troppo vecchia")
                         break
                 except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                     print("Non  ce")

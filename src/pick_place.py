@@ -19,7 +19,7 @@ RED = '\033[91m'
 BOLD = '\033[1m'
 END = '\033[0m'
 
-OBJECT_PARAM = "object_distribution"
+OBJECT_PARAM = "objects"
 PARAM_NOT_DEFINED_ERROR = RED + "Parameter : {} not defined" + END
 DEFINED_SEQUENCE = ["approach_pick", "pick", "approach_leave", "leave","approach_leave"]
 DEFINED_ROBOTIQ_COMMAND = {"approach_pick": "open","pick": "close", "leave": "open"}
@@ -40,12 +40,13 @@ def main():
     # Reset Gripper
     gripper = Gripper()
     gripper.genCommand(COMMAND_TO_GRIPPER["reset"])
+    gripper.genCommand(COMMAND_TO_GRIPPER["activate"]) # da decommentare se non funziona
     
     # Initial set-up robot
     rospy.loginfo("Moving to robot-neutral position with low speed...")
     limb.set_joint_position_speed(speed=0.3)
     limb.move_to_neutral()
-    limb.set_joint_position_speed(speed=1)
+    #limb.set_joint_position_speed(speed=1)
     rospy.loginfo("Robot speed set to maximum velocity...")
     
     for object in object_distribution:
@@ -56,7 +57,7 @@ def main():
             if position_to_reach in DEFINED_ROBOTIQ_COMMAND:
                 #aziona la pinza con il comando DEFINED_ROBOTIQ_COMMAND[position_to_reach]
                 gripper.genCommand(COMMAND_TO_GRIPPER[DEFINED_ROBOTIQ_COMMAND[position_to_reach]])
-                
+            rospy.sleep(2)    
 
     
 if __name__ == "__main__":

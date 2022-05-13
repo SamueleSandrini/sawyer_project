@@ -2,8 +2,6 @@
 
 import rospy
 
-# from std_srvs.srv import SetBool,SetBoolResponse
-# from std_msgs.msg import String
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Pose, Point, Quaternion, PoseArray, Transform, Vector3, TransformStamped
 import sys 
@@ -23,8 +21,7 @@ DEFINED_POSITION = ["approach_pick", "pick", "approach_leave", "leave"]
 
 POSITION_CONFIG_FILE = "objects_distribution.yaml"
 
-
-def append_to_config_file(data_to_add):
+def save_to_config_file(data_to_add):
     script_dir = os.path.dirname(os.path.realpath('__file__'))
     foldername = script_dir + "/src/sawyer_project/config/"
     print(foldername+POSITION_CONFIG_FILE)
@@ -40,23 +37,26 @@ def main():
     another_position = True
     position_list = dict()
     position_list["objects"] = []
-    while another_position:
-        actual_position_config = dict()
+    
+    while another_position:                                 # until user want another position
+        actual_position_config = dict()     
         for position_question in DEFINED_POSITION:
             input(USER_MESSAGE_POSITION.format(position_question))
+            
             #leggere topic 
             #verificare che sufficientemente diversa da prima altrimenti non salvarla
+            
             actual_pose = limb.joint_angles()
             print(actual_pose)
             print(type(actual_pose))
-            actual_position_config[position_question] = actual_pose
-        position_list["objects"].append(actual_position_config)
-        another_position_question = input(USER_QUESTION)
+            actual_position_config[position_question] = actual_pose         # fill dictionary at key = position_question
+        position_list["objects"].append(actual_position_config)             # append to a list of all objects
+        another_position_question = input(USER_QUESTION)                    # ask another position 
         if another_position_question == "n":
             another_position = False
     
-    append_to_config_file(position_list)
-    print(position_list)
+    save_to_config_file(position_list)                                    # save to file
+    rospy.loginfo(position_list)                                                   
     
     
 if __name__ == "__main__":

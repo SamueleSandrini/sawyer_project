@@ -50,70 +50,64 @@ from time import sleep
 
 class Gripper:
     def __init__(self):
-        pub_ = rospy.Publisher('Robotiq2FGripperRobotOutput', outputMsg.Robotiq2FGripper_robot_output)
+        self.pub_ = rospy.Publisher('Robotiq2FGripperRobotOutput', outputMsg.Robotiq2FGripper_robot_output, queue_size=10)
     
-    def genCommand(self,char):
+    def genCommandInside(self,char):
         """Update the command according to the character entered by the user."""
-        # strAskForCommand  = '-----\nAvailable commands\n\n'
-        # strAskForCommand += 'r: Reset\n'
-        # strAskForCommand += 'a: Activate\n'
-        # strAskForCommand += 'c: Close\n'
-        # strAskForCommand += 'o: Open\n'
-        # strAskForCommand += '(0-255): Go to that position\n'
-        # strAskForCommand += 'f: Faster\n'
-        # strAskForCommand += 'l: Slower\n'
-        # strAskForCommand += 'i: Increase force\n'
-        # strAskForCommand += 'd: Decrease force\n'
+
         if char == 'a':
-            command = outputMsg.Robotiq2FGripper_robot_output();
-            command.rACT = 1
-            command.rGTO = 1
-            command.rSP  = 255
-            command.rFR  = 150
+            self.command = outputMsg.Robotiq2FGripper_robot_output();
+            self.command.rACT = 1
+            self.command.rGTO = 1
+            self.command.rSP  = 255
+            self.command.rFR  = 150
 
         if char == 'r':
-            command = outputMsg.Robotiq2FGripper_robot_output();
-            command.rACT = 0
+            self.command = outputMsg.Robotiq2FGripper_robot_output();
+            self.command.rACT = 0
 
         if char == 'c':
-            command.rPR = 255
+            self.command.rPR = 255
 
         if char == 'o':
-            command.rPR = 0
+            self.command.rPR = 0
 
         #If the command entered is a int, assign this value to rPRA
         try:
-            command.rPR = int(char)
-            if command.rPR > 255:
-                command.rPR = 255
-            if command.rPR < 0:
-                command.rPR = 0
+            self.command.rPR = int(char)
+            if self.command.rPR > 255:
+                self.command.rPR = 255
+            if self.command.rPR < 0:
+                self.command.rPR = 0
         except ValueError:
             pass
 
         if char == 'f':
-            command.rSP += 25
-            if command.rSP > 255:
-                command.rSP = 255
+            self.command.rSP += 25
+            if self.command.rSP > 255:
+                self.command.rSP = 255
 
         if char == 'l':
-            command.rSP -= 25
-            if command.rSP < 0:
-                command.rSP = 0
+            self.command.rSP -= 25
+            if self.command.rSP < 0:
+                self.command.rSP = 0
 
 
         if char == 'i':
-            command.rFR += 25
-            if command.rFR > 255:
-                command.rFR = 255
+            self.command.rFR += 25
+            if self.command.rFR > 255:
+                self.command.rFR = 255
 
         if char == 'd':
-            command.rFR -= 25
-            if command.rFR < 0:
-                command.rFR = 0
+            self.command.rFR -= 25
+            if self.command.rFR < 0:
+                self.command.rFR = 0
 
-        self.publisher(command)
+        return self.command
+       
 
-    def publisher(self,command):
-        self.pub_.publish(command)
-
+    def genCommand(self,char):
+        # self.command = outputMsg.Robotiq2FGripper_robot_output();
+        self.command = self.genCommandInside(char)
+        self.pub_.publish(self.command)
+        
